@@ -3,7 +3,7 @@ from openvino.inference_engine import IECore
 
 model_bin = "./models/face-detection-retail-0005.bin"
 model_xml = "./models/face-detection-retail-0005.xml"
-VIDEO_PATH = "./video/Driver_1_Face_Cam.mp4"
+video_Patch = "./video/Driver_2_Face_Cam.mp4"
 
 # def generate_detection_area(frame):
 #     # By default, keep the original frame and select complete area
@@ -34,13 +34,25 @@ VIDEO_PATH = "./video/Driver_1_Face_Cam.mp4"
 
 # print(generate_detection_area)
 
-captura = cv2.VideoCapture(VIDEO_PATH)
-while (captura.isOpened()):
-  ret, imagen = captura.read()
+vid_capture = cv2.VideoCapture(video_Patch)
+while (vid_capture.isOpened()):
+  ret, img = vid_capture.read()
   if ret == True:
-    cv2.imshow('video', imagen)
+    cv2.imshow('video', img)
     if cv2.waitKey(30) == 27:  # exit if Escape is hit
         break
   else: break
-captura.release()
+vid_capture.release()
 cv2.destroyAllWindows()
+
+def face_Detection(
+    frame,
+    neural_net,
+    execution_net,
+    input,
+    output,
+    detection_area,
+):
+  N, C, H, W = neural_net.input_info
+  return frame
+
