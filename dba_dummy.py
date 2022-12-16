@@ -1,58 +1,65 @@
+from datetime import datetime
+import imutils
 import cv2
+import numpy as np
 from openvino.inference_engine import IECore
 
 model_bin = "./models/face-detection-retail-0005.bin"
 model_xml = "./models/face-detection-retail-0005.xml"
-video_Patch = "./video/Driver_2_Face_Cam.mp4"
+video_patch = "./video/Driver_1_Face_Cam.mp4"
+fps = 0
+initial_dt = datetime.now()
+initial_ts = int(datetime.timestamp(initial_dt))
 
-# def generate_detection_area(frame):
-#     # By default, keep the original frame and select complete area
-#     frame_height, frame_width = frame.shape[:-1]
-#     detection_area = [[0, 0], [frame_width, frame_height]]
-#     top_left_crop = (0, 0)
-#     bottom_right_crop = (frame_width, frame_height)
-#     # Select detection area
-#     window_name_roi = "Select Detection Area."
-#     roi = cv2.selectROI(window_name_roi, frame, False)
-#     cv2.destroyAllWindows()
-#     if int(roi[2]) != 0 and int(roi[3]) != 0:
-#         x_tl, y_tl = int(roi[0]), int(roi[1])
-#         x_br, y_br = int(roi[0] + roi[2]), int(roi[1] + roi[3])
-#         detection_area = [
-#             (x_tl, y_tl),
-#             (x_br, y_br),
-#         ]
-#     else:
-#         detection_area = [
-#             (0, 0),
-#             (
-#                 bottom_right_crop[0] - top_left_crop[0],
-#                 bottom_right_crop[1] - top_left_crop[1],
-#             ),
-#         ]
-#     return detection_area
 
-# print(generate_detection_area)
+#1 Obtener el frame
+def get_frame():
+  vidcap = cv2.VideoCapture(video_patch)
+  while(vidcap.isOpened()):
 
-vid_capture = cv2.VideoCapture(video_Patch)
-while (vid_capture.isOpened()):
-  ret, img = vid_capture.read()
-  if ret == True:
-    cv2.imshow('video', img)
-    if cv2.waitKey(30) == 27:  # exit if Escape is hit
+    # Capture frame-by-frame
+    ret, frame = vidcap.read()
+    if ret:
+      cv2.imshow('video', frame)
+      assert not isinstance(frame,type(None)), 'frame not found'
+      if cv2.waitKey(10) == 27:  # Esc to exit
         break
-  else: break
-vid_capture.release()
-cv2.destroyAllWindows()
+    else: break
+  vidcap.release()
+  cv2.destroyAllWindows()
+  
 
-def face_Detection(
-    frame,
-    neural_net,
-    execution_net,
-    input,
-    output,
-    detection_area,
-):
-  N, C, H, W = neural_net.input_info
-  return frame
+#2 Redimensionar el frame
+def resize_frame(frame, neural_net, input_blob):
+  B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
+  resized_frame = cv2.resize(frame, (W, H))
+  initial_h, initial_w, _ = frame.shape
 
+
+# #3 Recortar el frame con Opencv
+# #vidcap = cv2.VideoCapture(video_patch)
+# imagen = cv2.imread('pictures/picture_1.png')
+# alto, ancho, canales = imagen.shape
+# print('Alto={}, Ancho={}, Canales={}'.format(alto, ancho, canales))
+
+
+#FPS Counter
+def fps_counter():
+    dt = datetime.now()
+    ts = int(datetime.timestamp(dt))
+    if ts > initial_ts:
+        print("FPS: ", fps)
+        fps = 0
+        initial_ts = ts
+    else:
+        fps += 1
+
+
+# Funcion para graficar resultados sobre el frame
+def drawText(frame, scale, rectX, rectY, rectColor, text):
+    rectThinkness = 2
+    textSize, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, 3)
+    top = max(rectY - rectThinkness, textSize[0])
+    cv2.putText(
+        frame, text, (rectX, top), cv2.FONT_HERSHEY_SIMPLEX, scale, rectColor, 3
+    )
