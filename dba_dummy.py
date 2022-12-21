@@ -10,50 +10,28 @@ video_patch = "./video/Driver_1_Face_Cam.mp4"
 fps = 0
 initial_dt = datetime.now()
 initial_ts = int(datetime.timestamp(initial_dt))
+device = "CPU"
 
-
-#1 Obtener el frame
-def get_frame():
-  vidcap = cv2.VideoCapture(video_patch)
-  while(vidcap.isOpened()):
-
-    # Capture frame-by-frame
-    ret, frame = vidcap.read()
-    if ret:
-      cv2.imshow('video', frame)
-      assert not isinstance(frame,type(None)), 'frame not found'
-      if cv2.waitKey(10) == 27:  # Esc to exit
-        break
-    else: break
-  vidcap.release()
-  cv2.destroyAllWindows()
-  
+ie = IECore()
 
 #2 Redimensionar el frame
 def resize_frame(frame, neural_net, input_blob):
-  B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
-  resized_frame = cv2.resize(frame, (W, H))
-  initial_h, initial_w, _ = frame.shape
+    neural_net = ie.read_network(
+    model=model_xml, weights=model_bin)
+    B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
+    resized_frame = cv2.resize(frame, (W, H))
+    initial_h, initial_w, _ = frame.shape
 
+#3 Recortar el frame con Opencv
+def recortar_imagen(frame):
+    img = frame.copy()
+    h, w, c = img.shape
 
-# #3 Recortar el frame con Opencv
-# #vidcap = cv2.VideoCapture(video_patch)
-# imagen = cv2.imread('pictures/picture_1.png')
-# alto, ancho, canales = imagen.shape
-# print('Alto={}, Ancho={}, Canales={}'.format(alto, ancho, canales))
+    imgC1 = img[10:350, 10:590]
 
+    cv2.imshow('imgC1', imgC1)
 
-#FPS Counter
-def fps_counter():
-    dt = datetime.now()
-    ts = int(datetime.timestamp(dt))
-    if ts > initial_ts:
-        print("FPS: ", fps)
-        fps = 0
-        initial_ts = ts
-    else:
-        fps += 1
-
+    return imgC1
 
 # Funcion para graficar resultados sobre el frame
 def drawText(frame, scale, rectX, rectY, rectColor, text):
@@ -63,3 +41,54 @@ def drawText(frame, scale, rectX, rectY, rectColor, text):
     cv2.putText(
         frame, text, (rectX, top), cv2.FONT_HERSHEY_SIMPLEX, scale, rectColor, 3
     )
+
+def main():
+
+    ie = IECore()
+
+    neural_net = ie.read_network(
+        model=model_xml, weights=model_bin
+    )
+    car_pedestrian_execution_net = ie.load_network(
+        network=neural_net, device_name=device.upper()
+    )
+    input_blob = next(iter(car_pedestrian_execution_net.input_info))
+    output_blob = next(iter(car_pedestrian_execution_net.outputs))
+    neural_net.batch_size = 1
+
+    initial_dt = datetime.now()
+    initial_ts = int(datetime.timestamp(initial_dt))
+    fps = 0
+
+    #1 Obtener el frame
+    vidcap = cv2.VideoCapture(video_patch)
+    while(vidcap.isOpened()):
+
+        # Capture frame-by-frame
+        ret, frame = vidcap.read()
+        
+        if ret:
+            resize_frame(frame, neural_net, input_blob)
+            recortar_imagen(frame)
+
+            assert not isinstance(frame,type(None)), 'frame not found'
+            if cv2.waitKey(10) == 27:  # Esc to exit
+                break
+        else: break
+
+        #FPS Counter
+        dt = datetime.now()
+        ts = int(datetime.timestamp(dt))
+
+        if ts > initial_ts:
+            print("FPS: ", fps)
+            fps = 0
+            initial_ts = ts
+        else:
+            fps += 1
+
+    vidcap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
