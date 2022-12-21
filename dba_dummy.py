@@ -26,11 +26,8 @@ def resize_frame(frame, neural_net, input_blob):
 def recortar_imagen(frame):
     img = frame.copy()
     h, w, c = img.shape
-
     imgC1 = img[10:350, 10:590]
-
-    cv2.imshow('imgC1', imgC1)
-
+    # video = cv2.imshow('imgC1', imgC1)
     return imgC1
 
 # Funcion para graficar resultados sobre el frame
@@ -81,14 +78,20 @@ def main():
         ts = int(datetime.timestamp(dt))
 
         if ts > initial_ts:
-            print("FPS: ", fps)
+            print("FPS: ", fps) # Print FPS in console
             fps = 0
             initial_ts = ts
         else:
             fps += 1
+        
+        fps = int(vidcap.get(cv2.CAP_PROP_FPS)) # Acces FPS property
 
-    vidcap.release()
-    cv2.destroyAllWindows()
+        font = cv2.FONT_HERSHEY_SIMPLEX # Font to apply on text
+        cv2.putText(frame, str(fps), (50,50), font, 1, (0, 0, 255), 2) # Add text on frame
+        cv2.imshow('Live Streaming', frame) # Display frame/image
+
+    vidcap.release() # Release video capture object
+    cv2.destroyAllWindows() # Destroy all frame windows
 
 if __name__ == "__main__":
     main()
