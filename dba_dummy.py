@@ -1,4 +1,5 @@
 from datetime import datetime
+import time
 import imutils
 import cv2
 import numpy as np
@@ -7,27 +8,17 @@ from openvino.inference_engine import IECore
 model_bin = "./models/face-detection-retail-0005.bin"
 model_xml = "./models/face-detection-retail-0005.xml"
 video_patch = "./video/Driver_1_Face_Cam.mp4"
-fps = 0
-initial_dt = datetime.now()
-initial_ts = int(datetime.timestamp(initial_dt))
+BLUE = (255, 0, 0)
+RED = (0, 0, 255)
+confidence_threshold = 0.6
+
 device = "CPU"
-
-ie = IECore()
-
-#2 Redimensionar el frame
-def resize_frame(frame, neural_net, input_blob):
-    neural_net = ie.read_network(
-    model=model_xml, weights=model_bin)
-    B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
-    resized_frame = cv2.resize(frame, (W, H))
-    initial_h, initial_w, _ = frame.shape
 
 #3 Recortar el frame con Opencv
 def recortar_imagen(frame):
     img = frame.copy()
     h, w, c = img.shape
     imgC1 = img[10:350, 10:590]
-    # video = cv2.imshow('imgC1', imgC1)
     return imgC1
 
 # Funcion para graficar resultados sobre el frame
@@ -39,56 +30,145 @@ def drawText(frame, scale, rectX, rectY, rectColor, text):
         frame, text, (rectX, top), cv2.FONT_HERSHEY_SIMPLEX, scale, rectColor, 3
     )
 
+# Funcion para seleccionar area de interes
+def generate_detection_area(frame):
+    # By default, keep the original frame and select complete area
+    frame_height, frame_width = frame.shape[:-1]
+    detection_area = [[0, 0], [frame_width, frame_height]]
+    top_left_crop = (0, 0)
+    bottom_right_crop = (frame_width, frame_height)
+    # Select detection area
+    window_name_roi = "Select Detection Area."
+    roi = cv2.selectROI(window_name_roi, frame, False)
+    cv2.destroyAllWindows()
+    if int(roi[2]) != 0 and int(roi[3]) != 0:
+        x_tl, y_tl = int(roi[0]), int(roi[1])
+        x_br, y_br = int(roi[0] + roi[2]), int(roi[1] + roi[3])
+        detection_area = [
+            (x_tl, y_tl),
+            (x_br, y_br),
+        ]
+    else:
+        detection_area = [
+            (0, 0),
+            (
+                bottom_right_crop[0] - top_left_crop[0],
+                bottom_right_crop[1] - top_left_crop[1],
+            ),
+        ]
+    return detection_area
+
+def check_detection_area(x, y, detection_area):
+    if len(detection_area) != 2:
+        raise ValueError("Invalid number of points in detection area")
+    top_left = detection_area[0]
+    bottom_right = detection_area[1]
+    # Get coordinates
+    xmin, ymin = top_left[0], top_left[1]
+    xmax, ymax = bottom_right[0], bottom_right[1]
+    # Check if the point is inside a ROI
+    return xmin < x and x < xmax and ymin < y and y < ymax
+
+def face_detection(
+    frame,
+    neural_net,
+    execution_net,
+    input_blob,
+    output_blob,
+    detection_area,
+):
+
+    #2 Redimensionar el frame
+    N, C, H, W = neural_net.input_info[
+    input_blob
+    ].tensor_desc.dims
+    resized_frame = cv2.resize(frame, (W, H))
+    initial_h, initial_w, _ = frame.shape
+
+    # reshape to network input shape
+    # Change data layout from HWC to CHW
+    input_image = np.expand_dims(resized_frame.transpose(2, 0, 1), 0)
+
+    results = execution_net.infer(inputs={input_blob: input_image}).get(output_blob)
+
+    for detection in results[0][0]:
+        label = int(detection[1])
+        accuracy = float(detection[2])
+        det_color = BLUE if label == 1 else RED
+        # Draw only objects when accuracy is greater than configured threshold
+        if accuracy > confidence_threshold:
+            xmin = int(detection[3] * initial_w)
+            ymin = int(detection[4] * initial_h)
+            xmax = int(detection[5] * initial_w)
+            ymax = int(detection[6] * initial_h)
+            # Central points of detection
+            x = (xmin + xmax) / 2
+            y = (ymin + ymax) / 2
+
+            # Check if central points fall inside the detection area
+            if check_detection_area(x, y, detection_area):
+                cv2.rectangle(
+                    frame,
+                    (xmin, ymin),
+                    (xmax, ymax),
+                    det_color,
+                    thickness=2,
+                )
+
 def main():
 
     ie = IECore()
 
     neural_net = ie.read_network(
-        model=model_xml, weights=model_bin
+        model = model_xml, 
+        weights = model_bin
     )
-    car_pedestrian_execution_net = ie.load_network(
+    execution_net = ie.load_network(
         network=neural_net, device_name=device.upper()
     )
-    input_blob = next(iter(car_pedestrian_execution_net.input_info))
-    output_blob = next(iter(car_pedestrian_execution_net.outputs))
-    neural_net.batch_size = 1
+    input_blob = next(iter(execution_net.input_info))
+    output_blob = next(iter(execution_net.outputs))
+    neural_net.batch_size = 1 # Cantidad de frames procesados en paralelo
+    
+    prev_frame_time = 0
+    new_frame_time = 0
 
-    initial_dt = datetime.now()
-    initial_ts = int(datetime.timestamp(initial_dt))
-    fps = 0
+    
 
     #1 Obtener el frame
     vidcap = cv2.VideoCapture(video_patch)
-    while(vidcap.isOpened()):
+    success, frame = vidcap.read()
+    detection_area = generate_detection_area(frame)
 
-        # Capture frame-by-frame
-        ret, frame = vidcap.read()
-        
+    recortar_imagen(frame)
+
+    while(success): # Reading the video file until finished
+        ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
-            resize_frame(frame, neural_net, input_blob)
-            recortar_imagen(frame)
 
-            assert not isinstance(frame,type(None)), 'frame not found'
-            if cv2.waitKey(10) == 27:  # Esc to exit
+            
+
+            face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
+
+            
+
+            if cv2.waitKey(8) == 27:  # Esc to exit
                 break
         else: break
 
         #FPS Counter
-        dt = datetime.now()
-        ts = int(datetime.timestamp(dt))
+        if not ret:
+            break
+        font = cv2.FONT_HERSHEY_SIMPLEX # font which we will be using to display FPS
+        new_frame_time = time.time() # time when we finish processing for this frame
+        fps = 1/(new_frame_time-prev_frame_time) # Calculating the fps
+        prev_frame_time = new_frame_time
+        fps = int(fps) # converting the fps into integer
+        fps = str(fps) # converting the fps to string so that we can display it on frame
+        cv2.putText(frame, fps, (7, 70), font, 2, (100, 255, 0), 3, cv2.LINE_AA)
 
-        if ts > initial_ts:
-            print("FPS: ", fps) # Print FPS in console
-            fps = 0
-            initial_ts = ts
-        else:
-            fps += 1
-        
-        fps = int(vidcap.get(cv2.CAP_PROP_FPS)) # Acces FPS property
-
-        font = cv2.FONT_HERSHEY_SIMPLEX # Font to apply on text
-        cv2.putText(frame, str(fps), (50,50), font, 1, (0, 0, 255), 2) # Add text on frame
-        cv2.imshow('Live Streaming', frame) # Display frame/image
+        showImg = imutils.resize(frame, height=500)
+        cv2.imshow('Live Streaming', showImg) # Display frame/image
 
     vidcap.release() # Release video capture object
     cv2.destroyAllWindows() # Destroy all frame windows
