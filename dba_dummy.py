@@ -86,7 +86,6 @@ def face_detection(
     initial_h, initial_w, _ = frame.shape
 
     # reshape to network input shape
-    # Change data layout from HWC to CHW
     input_image = np.expand_dims(resized_frame.transpose(2, 0, 1), 0)
 
     results = execution_net.infer(inputs={input_blob: input_image}).get(output_blob)
@@ -133,8 +132,6 @@ def main():
     prev_frame_time = 0
     new_frame_time = 0
 
-    
-
     #1 Obtener el frame
     vidcap = cv2.VideoCapture(video_patch)
     success, frame = vidcap.read()
@@ -146,11 +143,7 @@ def main():
         ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
 
-            
-
             face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-
-            
 
             if cv2.waitKey(8) == 27:  # Esc to exit
                 break
