@@ -10,7 +10,7 @@ download_models::
 
 virtualenv:
 	@echo "Creating Virtual Environment"
-	$(MIDDLEWARE_FOLDER)/scripts/config_virtual_env.sh $(PIP) $(PYTHON) $(VIRTUAL_ENV)
+	$/Scripts/config_virtual_env.sh $(PIP) $(PYTHON) $(VIRTUAL_ENV)
 
 run:
 	$(PYTHON) $(REPO_FOLDER)/dba_dummy.py
