@@ -3,5 +3,4 @@
 **/__pychache__/
 
 # Ignoring Virtual Environment
-venv/*
-.env/
+venv/

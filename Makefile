@@ -3,7 +3,7 @@ PYTHON=python3
 PIP=pip3
 SHELL := /bin/bash
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-export VIRTUAL_ENV = .env
+export VIRTUAL_ENV = venv
 
 download_models::
 	./Scripts/download_model.sh face-detection-retail-0005
