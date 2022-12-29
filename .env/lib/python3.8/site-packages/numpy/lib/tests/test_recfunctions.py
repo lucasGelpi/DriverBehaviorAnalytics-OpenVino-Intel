@@ -1,5 +1,3 @@
-from __future__ import division, absolute_import, print_function
-
 import pytest
 
 import numpy as np
@@ -19,10 +17,10 @@ zip_descr = np.lib.recfunctions._zip_descr
 zip_dtype = np.lib.recfunctions._zip_dtype
 
 
-class TestRecFunctions(object):
+class TestRecFunctions:
     # Misc tests
 
-    def setup(self):
+    def setup_method(self):
         x = np.array([1, 2, ])
         y = np.array([10, 20, 30])
         z = np.array([('A', 1.), ('B', 2.)],
@@ -91,8 +89,10 @@ class TestRecFunctions(object):
         control = np.array([(1,), (4,)], dtype=[('a', int)])
         assert_equal(test, control)
 
+        # dropping all fields results in an array with no fields
         test = drop_fields(a, ['a', 'b'])
-        assert_(test is None)
+        control = np.array([(), ()], dtype=[])
+        assert_equal(test, control)
 
     def test_rename_fields(self):
         # Test rename fields
@@ -318,6 +318,15 @@ class TestRecFunctions(object):
         assert_raises(NotImplementedError, unstructured_to_structured,
                                            np.zeros((3,0), dtype=np.int32))
 
+    def test_unstructured_to_structured(self):
+        # test if dtype is the args of np.dtype
+        a = np.zeros((20, 2))
+        test_dtype_args = [('x', float), ('y', float)]
+        test_dtype = np.dtype(test_dtype_args)
+        field1 = unstructured_to_structured(a, dtype=test_dtype_args)  # now
+        field2 = unstructured_to_structured(a, dtype=test_dtype)  # before
+        assert_equal(field1, field2)
+
     def test_field_assignment_by_name(self):
         a = np.ones(2, dtype=[('a', 'i4'), ('b', 'f8'), ('c', 'u1')])
         newdt = [('b', 'f4'), ('c', 'u1')]
@@ -346,7 +355,7 @@ class TestRecFunctions(object):
         assert_equal(b[()], 3)
 
 
-class TestRecursiveFillFields(object):
+class TestRecursiveFillFields:
     # Test recursive_fill_fields.
     def test_simple_flexible(self):
         # Test recursive_fill_fields on flexible-array
@@ -369,17 +378,17 @@ class TestRecursiveFillFields(object):
         assert_equal(test, control)
 
 
-class TestMergeArrays(object):
+class TestMergeArrays:
     # Test merge_arrays
 
-    def setup(self):
+    def setup_method(self):
         x = np.array([1, 2, ])
         y = np.array([10, 20, 30])
         z = np.array(
             [('A', 1.), ('B', 2.)], dtype=[('A', '|S3'), ('B', float)])
         w = np.array(
-            [(1, (2, 3.0)), (4, (5, 6.0))],
-            dtype=[('a', int), ('b', [('ba', float), ('bb', int)])])
+            [(1, (2, 3.0, ())), (4, (5, 6.0, ()))],
+            dtype=[('a', int), ('b', [('ba', float), ('bb', int), ('bc', [])])])
         self.data = (w, x, y, z)
 
     def test_solo(self):
@@ -450,8 +459,8 @@ class TestMergeArrays(object):
         test = merge_arrays((x, w), flatten=False)
         controldtype = [('f0', int),
                                 ('f1', [('a', int),
-                                        ('b', [('ba', float), ('bb', int)])])]
-        control = np.array([(1., (1, (2, 3.0))), (2, (4, (5, 6.0)))],
+                                        ('b', [('ba', float), ('bb', int), ('bc', [])])])]
+        control = np.array([(1., (1, (2, 3.0, ()))), (2, (4, (5, 6.0, ())))],
                            dtype=controldtype)
         assert_equal(test, control)
 
@@ -502,10 +511,10 @@ class TestMergeArrays(object):
         assert_equal(test, control)
 
 
-class TestAppendFields(object):
+class TestAppendFields:
     # Test append_fields
 
-    def setup(self):
+    def setup_method(self):
         x = np.array([1, 2, ])
         y = np.array([10, 20, 30])
         z = np.array(
@@ -556,9 +565,9 @@ class TestAppendFields(object):
         assert_equal(test, control)
 
 
-class TestStackArrays(object):
+class TestStackArrays:
     # Test stack_arrays
-    def setup(self):
+    def setup_method(self):
         x = np.array([1, 2, ])
         y = np.array([10, 20, 30])
         z = np.array(
@@ -727,8 +736,8 @@ class TestStackArrays(object):
         assert_equal(res.mask, expected.mask)
 
 
-class TestJoinBy(object):
-    def setup(self):
+class TestJoinBy:
+    def setup_method(self):
         self.a = np.array(list(zip(np.arange(10), np.arange(50, 60),
                                    np.arange(100, 110))),
                           dtype=[('a', int), ('b', int), ('c', int)])
@@ -770,7 +779,6 @@ class TestJoinBy(object):
 
     def test_join_subdtype(self):
         # tests the bug in https://stackoverflow.com/q/44769632/102441
-        from numpy.lib import recfunctions as rfn
         foo = np.array([(1,)],
                        dtype=[('key', int)])
         bar = np.array([(1, np.array([1,2,3]))],
@@ -836,7 +844,6 @@ class TestJoinBy(object):
         b = np.ones(3, dtype=[('c', 'u1'), ('b', 'f4'), ('a', 'i4')])
         assert_raises(ValueError, join_by, ['a', 'b', 'b'], a, b)
 
-    @pytest.mark.xfail(reason="See comment at gh-9343")
     def test_same_name_different_dtypes_key(self):
         a_dtype = np.dtype([('key', 'S5'), ('value', '<f4')])
         b_dtype = np.dtype([('key', 'S10'), ('value', '<f4')])
@@ -893,9 +900,9 @@ class TestJoinBy(object):
         assert_equal(res.dtype, expected_dtype)
 
 
-class TestJoinBy2(object):
+class TestJoinBy2:
     @classmethod
-    def setup(cls):
+    def setup_method(cls):
         cls.a = np.array(list(zip(np.arange(10), np.arange(50, 60),
                                   np.arange(100, 110))),
                          dtype=[('a', int), ('b', int), ('c', int)])
@@ -958,13 +965,13 @@ class TestJoinBy2(object):
         assert_equal(test.dtype, control.dtype)
         assert_equal(test, control)
 
-class TestAppendFieldsObj(object):
+class TestAppendFieldsObj:
     """
     Test append_fields with arrays containing objects
     """
     # https://github.com/numpy/numpy/issues/2346
 
-    def setup(self):
+    def setup_method(self):
         from datetime import date
         self.data = dict(obj=date(2000, 1, 1))
 

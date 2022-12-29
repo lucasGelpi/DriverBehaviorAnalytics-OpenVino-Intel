@@ -1,4 +1,4 @@
+openvino==2021.4.0
 imutils
 numpy
 opencv-python
-openvino==2021.4.0

@@ -7,7 +7,6 @@ USE_CASE=$4
 
 # Install python virtual env module
 sudo -A apt-get install -y python3-venv
-# sudo -A apt-get install -y etcd-client
 # Create a virtual env
 ${PYTHON} -m venv ${ENV_FOLDER}
 # Activate virtual env

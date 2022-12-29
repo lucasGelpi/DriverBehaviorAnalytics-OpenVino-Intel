@@ -4,3 +4,4 @@
 
 # Ignoring Virtual Environment
 venv/*
+.env/*
