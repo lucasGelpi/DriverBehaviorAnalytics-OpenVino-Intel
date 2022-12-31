@@ -4,3 +4,6 @@
 
 # Ignoring Virtual Environment
 venv/
+
+# Ignoring Models
+Models/
