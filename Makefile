@@ -14,3 +14,5 @@ virtualenv:
 
 run:
 	$(PYTHON) $(REPO_FOLDER)/dba_dummy.py
+
+start:: download_models virtualenv run

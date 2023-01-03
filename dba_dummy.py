@@ -11,26 +11,12 @@ video_patch = "./video/Driver_1_Face_Cam.mp4"
 BLUE = (255, 0, 0)
 RED = (0, 0, 255)
 confidence_threshold = 0.6
-
 device = "CPU"
 
-#3 Recortar el frame con Opencv
-def recortar_imagen(frame):
-    img = frame.copy()
-    h, w, c = img.shape
-    imgC1 = img[10:350, 10:590]
-    return imgC1
+prev_frame_time = 0
+new_frame_time = 0
 
-# Funcion para graficar resultados sobre el frame
-def drawText(frame, scale, rectX, rectY, rectColor, text):
-    rectThinkness = 2
-    textSize, _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, 3)
-    top = max(rectY - rectThinkness, textSize[0])
-    cv2.putText(
-        frame, text, (rectX, top), cv2.FONT_HERSHEY_SIMPLEX, scale, rectColor, 3
-    )
-
-# Funcion para seleccionar area de interes
+# Function to select area of interest
 def generate_detection_area(frame):
     # By default, keep the original frame and select complete area
     frame_height, frame_width = frame.shape[:-1]
@@ -58,6 +44,7 @@ def generate_detection_area(frame):
         ]
     return detection_area
 
+# Check detection area
 def check_detection_area(x, y, detection_area):
     if len(detection_area) != 2:
         raise ValueError("Invalid number of points in detection area")
@@ -69,25 +56,34 @@ def check_detection_area(x, y, detection_area):
     # Check if the point is inside a ROI
     return xmin < x and x < xmax and ymin < y and y < ymax
 
+# FPS Counter
+def fps_counter(frame):
+    global new_frame_time, prev_frame_time
+    font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
+    new_frame_time = time.time() # Time when we finish processing for this frame
+    fps = 1/(new_frame_time-prev_frame_time) # Calculating the FPS
+    prev_frame_time = new_frame_time
+    fps = int(fps) # Converting the FPS into integer
+    fps = str(fps) # Converting the FPS to string so that we can display it on frame
+    cv2.putText(frame, fps, (7, 70), font, 2, (100, 255, 0), 3, cv2.LINE_AA) #Print FPS on the frame
+
+# Main Function
 def face_detection(
     frame,
     neural_net,
     execution_net,
     input_blob,
     output_blob,
-    detection_area,
+    detection_area
 ):
 
-    #2 Redimensionar el frame
-    N, C, H, W = neural_net.input_info[
-    input_blob
-    ].tensor_desc.dims
+    #2 Resize the frame
+    N, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
     resized_frame = cv2.resize(frame, (W, H))
     initial_h, initial_w, _ = frame.shape
 
     # reshape to network input shape
     input_image = np.expand_dims(resized_frame.transpose(2, 0, 1), 0)
-
     results = execution_net.infer(inputs={input_blob: input_image}).get(output_blob)
 
     for detection in results[0][0]:
@@ -127,17 +123,12 @@ def main():
     )
     input_blob = next(iter(execution_net.input_info))
     output_blob = next(iter(execution_net.outputs))
-    neural_net.batch_size = 1 # Cantidad de frames procesados en paralelo
-    
-    prev_frame_time = 0
-    new_frame_time = 0
+    neural_net.batch_size = 1 # Number of frames processed in parallel
 
     #1 Obtener el frame
     vidcap = cv2.VideoCapture(video_patch)
     success, frame = vidcap.read()
     detection_area = generate_detection_area(frame)
-
-    recortar_imagen(frame)
 
     while(success): # Reading the video file until finished
         ret, frame = vidcap.read() # Capture frame-by-frame
@@ -149,16 +140,9 @@ def main():
                 break
         else: break
 
-        #FPS Counter
         if not ret:
             break
-        font = cv2.FONT_HERSHEY_SIMPLEX # font which we will be using to display FPS
-        new_frame_time = time.time() # time when we finish processing for this frame
-        fps = 1/(new_frame_time-prev_frame_time) # Calculating the fps
-        prev_frame_time = new_frame_time
-        fps = int(fps) # converting the fps into integer
-        fps = str(fps) # converting the fps to string so that we can display it on frame
-        cv2.putText(frame, fps, (7, 70), font, 2, (100, 255, 0), 3, cv2.LINE_AA)
+        fps_counter(frame)
 
         showImg = imutils.resize(frame, height=500)
         cv2.imshow('Live Streaming', showImg) # Display frame/image
@@ -166,5 +150,4 @@ def main():
     vidcap.release() # Release video capture object
     cv2.destroyAllWindows() # Destroy all frame windows
 
-if __name__ == "__main__":
-    main()
+main()

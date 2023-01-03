@@ -3,7 +3,6 @@ SCRIPT_DIR=`dirname $0`
 PIP=$1
 PYTHON=$2
 ENV_FOLDER=$3
-USE_CASE=$4
 
 # Install python virtual env module
 sudo -A apt-get install -y python3-venv
