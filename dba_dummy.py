@@ -86,6 +86,9 @@ def face_detection(
     input_image = np.expand_dims(resized_frame.transpose(2, 0, 1), 0)
     results = execution_net.infer(inputs={input_blob: input_image}).get(output_blob)
 
+    # print(results)
+    # exit()
+
     for detection in results[0][0]:
         label = int(detection[1])
         accuracy = float(detection[2])
