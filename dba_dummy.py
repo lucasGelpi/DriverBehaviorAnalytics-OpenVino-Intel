@@ -7,7 +7,7 @@ from openvino.inference_engine import IECore
 
 model_bin = "./models/face-detection-retail-0005.bin"
 model_xml = "./models/face-detection-retail-0005.xml"
-video_patch = "./video/Driver_1_Face_Cam.mp4"
+video_patch = "./video/Face_Cam_1.mp4"
 BLUE = (255, 0, 0)
 RED = (0, 0, 255)
 confidence_threshold = 0.6
