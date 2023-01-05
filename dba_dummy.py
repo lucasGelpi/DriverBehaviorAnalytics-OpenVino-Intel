@@ -46,8 +46,10 @@ def generate_detection_area(frame):
 
 # Check detection area
 def check_detection_area(x, y, detection_area):
-    if len(detection_area) != 2:
+    # Verify that the detection area has size 2 if it does not throw an error
+    if len(detection_area) != 2: 
         raise ValueError("Invalid number of points in detection area")
+    # Set boundaries area
     top_left = detection_area[0]
     bottom_right = detection_area[1]
     # Get coordinates
@@ -58,7 +60,7 @@ def check_detection_area(x, y, detection_area):
 
 # FPS Counter
 def fps_counter(frame):
-    global new_frame_time, prev_frame_time
+    global new_frame_time, prev_frame_time # Make global variables
     font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
     new_frame_time = time.time() # Time when we finish processing for this frame
     fps = 1/(new_frame_time-prev_frame_time) # Calculating the FPS
@@ -68,7 +70,7 @@ def fps_counter(frame):
     cv2.putText(frame, fps, (7, 70), font, 2, (100, 255, 0), 3, cv2.LINE_AA) #Print FPS on the frame
 
 # Main Function
-def face_detection(
+def face_detection( #obtiene parametros del modelo
     frame,
     neural_net,
     execution_net,
@@ -77,17 +79,16 @@ def face_detection(
     detection_area
 ):
 
-    #2 Resize the frame
-    N, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
-    resized_frame = cv2.resize(frame, (W, H))
-    initial_h, initial_w, _ = frame.shape
-
-    # reshape to network input shape
+    # B: batch size, C: number of channels, H: image height, W: image width
+    B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
+    # Resize the frame
+    # Resizes the frame according to the parameters of the model
+    resized_frame = cv2.resize(frame, (W, H)) #2 Resize the frame
+    initial_h, initial_w, _ = frame.shape # Sets height and width based on the dimensions of the array
+    # Format the array to have the shape specified in the model
+    # Let element 3 first, 1 second, and 2 third and then adding a new one in position 1
     input_image = np.expand_dims(resized_frame.transpose(2, 0, 1), 0)
     results = execution_net.infer(inputs={input_blob: input_image}).get(output_blob)
-
-    # print(results)
-    # exit()
 
     for detection in results[0][0]:
         label = int(detection[1])
@@ -115,7 +116,7 @@ def face_detection(
 
 def main():
 
-    ie = IECore()
+    ie = IECore() # Instantiate an IEcore object to work with openvino
 
     neural_net = ie.read_network(
         model = model_xml, 
@@ -128,9 +129,12 @@ def main():
     output_blob = next(iter(execution_net.outputs))
     neural_net.batch_size = 1 # Number of frames processed in parallel
 
-    #1 Obtener el frame
-    vidcap = cv2.VideoCapture(video_patch)
+    vidcap = cv2.VideoCapture(video_patch) #1 Capture the frame using a video as source
+    
+    # Returns a tuple with a boolean and the data of the frame in the form of an array
     success, frame = vidcap.read()
+
+    # Crop the frame by setting the detection area
     detection_area = generate_detection_area(frame)
 
     while(success): # Reading the video file until finished
