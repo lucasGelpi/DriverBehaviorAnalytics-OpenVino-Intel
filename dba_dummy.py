@@ -155,3 +155,6 @@ def main():
     cv2.destroyAllWindows() # Destroy all frame windows
 
 main()
+print("------------------------------")
+print("USE CASE EXECUTED SUCCESSFULLY")
+print("------------------------------")
