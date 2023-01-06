@@ -1,4 +1,3 @@
-#!/bin/bash -e
 MODEL=$1
 
 REPO_FOLDER=$(pwd)

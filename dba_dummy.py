@@ -81,7 +81,6 @@ def face_detection( #obtiene parametros del modelo
 
     # B: batch size, C: number of channels, H: image height, W: image width
     B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
-    # Resize the frame
     # Resizes the frame according to the parameters of the model
     resized_frame = cv2.resize(frame, (W, H)) #2 Resize the frame
     initial_h, initial_w, _ = frame.shape # Sets height and width based on the dimensions of the array
@@ -140,9 +139,7 @@ def main():
     while(success): # Reading the video file until finished
         ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
-
             face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-
             if cv2.waitKey(8) == 27:  # Esc to exit
                 break
         else: break
