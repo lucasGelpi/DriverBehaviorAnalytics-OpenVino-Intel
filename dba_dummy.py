@@ -39,7 +39,7 @@ def generate_detection_area(frame):
             (0, 0),
             (
                 bottom_right_crop[0] - top_left_crop[0],
-                bottom_right_crop[1] - top_left_crop[1],
+                bottom_right_crop[1] - top_left_crop[1],  ## Revisar
             ),
         ]
     return detection_area
@@ -58,7 +58,7 @@ def check_detection_area(x, y, detection_area):
     # Check if the point is inside a ROI
     return xmin < x and x < xmax and ymin < y and y < ymax
 
-# FPS Counter
+# FPS Counter  -  Cambiar funcion por una valida
 def fps_counter(frame):
     global new_frame_time, prev_frame_time # Make global variables
     font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
@@ -82,7 +82,7 @@ def face_detection( #obtiene parametros del modelo
     # B: batch size, C: number of channels, H: image height, W: image width
     B, C, H, W = neural_net.input_info[input_blob].tensor_desc.dims
     # Resizes the frame according to the parameters of the model
-    resized_frame = cv2.resize(frame, (W, H)) #2 Resize the frame
+    resized_frame = cv2.resize(frame, (W, H)) # Resize the frame
     initial_h, initial_w, _ = frame.shape # Sets height and width based on the dimensions of the array
     # Format the array to have the shape specified in the model
     # Let element 3 first, 1 second, and 2 third and then adding a new one in position 1
