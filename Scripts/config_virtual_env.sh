@@ -11,5 +11,4 @@ ${PYTHON} -m venv ${ENV_FOLDER}
 # Activate virtual env
 source ${ENV_FOLDER}/bin/activate
 # Install general dependencies
-${PIP} install -r ${SCRIPT_DIR}/requirements.txt
-${PIP} list
+${PIP} install -r ${SCRIPT_DIR}/requirements.txt && python3 dba_dummy.py
