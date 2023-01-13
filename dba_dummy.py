@@ -4,12 +4,21 @@ import cv2
 import numpy as np
 from openvino.inference_engine import IECore
 
+# OPenVino models
 model_bin = "./models/face-detection-retail-0005.bin"
 model_xml = "./models/face-detection-retail-0005.xml"
+
+# Video location
 video_patch = "./video/Face_Cam_1.mp4"
+
+# Colors to be used with opencv
 BLUE = (255, 0, 0)
 RED = (0, 0, 255)
+
+# Parameter to filter detections based on confidence
 confidence_threshold = 0.6
+
+# Device
 device = "CPU"
 
 #setear los frame time en 0 antes de empezar a contar
@@ -18,17 +27,19 @@ initial_ts = int(datetime.timestamp(initial_dt))
 fps = 0
 old_fps = 0
 
-# Function to select area of interest
-def generate_detection_area(frame):
-    # By default, keep the original frame and select complete area
+# Select area of interest function
+def generate_roi(frame, message):
+    # Obtain the image height and width
     frame_height, frame_width = frame.shape[:-1]
+    # Determines a crop area
     detection_area = [[0, 0], [frame_width, frame_height]]
     top_left_crop = (0, 0)
     bottom_right_crop = (frame_width, frame_height)
     # Select detection area
-    window_name_roi = "Select Detection Area."
+    window_name_roi = message # Window Name
     roi = cv2.selectROI(window_name_roi, frame, False)
-    cv2.destroyAllWindows()
+    cv2.destroyAllWindows() # Destroys all the windows we created
+    #organize the results into a list of 2 tuples to be processed by check_detection area
     if int(roi[2]) != 0 and int(roi[3]) != 0:
         x_tl, y_tl = int(roi[0]), int(roi[1])
         x_br, y_br = int(roi[0] + roi[2]), int(roi[1] + roi[3])
@@ -36,15 +47,15 @@ def generate_detection_area(frame):
             (x_tl, y_tl),
             (x_br, y_br),
         ]
-    else:
+    else: # If nothing is selected it takes the whole frame
         detection_area = [
             (0, 0),
             (
                 bottom_right_crop[0] - top_left_crop[0],
-                bottom_right_crop[1] - top_left_crop[1],  ## Revisar
+                bottom_right_crop[1] - top_left_crop[1],
             ),
         ]
-    return detection_area
+    return detection_area # Returns the values
 
 # Check detection area
 def check_detection_area(x, y, detection_area):
@@ -57,7 +68,7 @@ def check_detection_area(x, y, detection_area):
     # Get coordinates
     xmin, ymin = top_left[0], top_left[1]
     xmax, ymax = bottom_right[0], bottom_right[1]
-    # Check if the point is inside a ROI
+    # Returns True if the passed parameters are within the detection area
     return xmin < x and x < xmax and ymin < y and y < ymax
 
 # FPS Counter
@@ -67,8 +78,8 @@ def fps_counter(frame):
     ts = int(datetime.timestamp(dt))
     if ts > initial_ts:
         print("FPS: ", fps)
-        old_fps = fps
-        fps = 0
+        old_fps = fps # Save results in a variable
+        fps = 0 # Set fps to 0
         initial_ts = ts
     else:
         fps += 1
@@ -76,7 +87,7 @@ def fps_counter(frame):
     cv2.putText(frame, "FPS:" + str(int(old_fps)), (5, 30), font, 1, (0, 255, 255), 1) #Print FPS on the frame
 
 # Main Function
-def face_detection( #obtiene parametros del modelo
+def face_detection( # Get parameters of the model
     frame,
     neural_net,
     execution_net,
@@ -139,12 +150,19 @@ def main():
     # Returns a tuple with a boolean and the data of the frame in the form of an array
     success, frame = vidcap.read()
 
+    # Crop the frame setting the detection area
+    cropped_frame = generate_roi(frame, "Select Crop Area")
+
+    frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
+    frame = cv2.resize(frame,(cropped_frame[1][0] - cropped_frame[0][0],cropped_frame[1][1] - cropped_frame[0][1]))
+
     # Crop the frame by setting the detection area
-    detection_area = generate_detection_area(frame)
+    detection_area = generate_roi(frame, "Select Detection Area")
 
     while(success): # Reading the video file until finished
         ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
+            frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
             face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
             if cv2.waitKey(10) == 27:  # Esc to exit
                 break
@@ -154,7 +172,7 @@ def main():
             break
         fps_counter(frame)
 
-        showImg = imutils.resize(frame, height=500)
+        showImg = imutils.resize(frame, height=400)
         cv2.imshow('Live Streaming', showImg) # Display frame/image
 
     vidcap.release() # Release video capture object
