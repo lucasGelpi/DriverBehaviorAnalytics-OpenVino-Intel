@@ -1,4 +1,3 @@
-from datetime import datetime
 import time
 import imutils
 import cv2
@@ -12,9 +11,6 @@ BLUE = (255, 0, 0)
 RED = (0, 0, 255)
 confidence_threshold = 0.6
 device = "CPU"
-
-prev_frame_time = 0
-new_frame_time = 0
 
 # Function to select area of interest
 def generate_detection_area(frame):
@@ -57,17 +53,6 @@ def check_detection_area(x, y, detection_area):
     xmax, ymax = bottom_right[0], bottom_right[1]
     # Check if the point is inside a ROI
     return xmin < x and x < xmax and ymin < y and y < ymax
-
-# FPS Counter  -  Cambiar funcion por una valida
-def fps_counter(frame):
-    global new_frame_time, prev_frame_time # Make global variables
-    font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-    new_frame_time = time.time() # Time when we finish processing for this frame
-    fps = 1/(new_frame_time-prev_frame_time) # Calculating the FPS
-    prev_frame_time = new_frame_time
-    fps = int(fps) # Converting the FPS into integer
-    fps = str(fps) # Converting the FPS to string so that we can display it on frame
-    cv2.putText(frame, fps, (7, 70), font, 2, (100, 255, 0), 3, cv2.LINE_AA) #Print FPS on the frame
 
 # Main Function
 def face_detection( #obtiene parametros del modelo
@@ -129,27 +114,34 @@ def main():
     neural_net.batch_size = 1 # Number of frames processed in parallel
 
     vidcap = cv2.VideoCapture(video_patch) #1 Capture the frame using a video as source
-    
-    # Returns a tuple with a boolean and the data of the frame in the form of an array
-    success, frame = vidcap.read()
+    success, frame = vidcap.read() # Capture frame-by-frame
 
     # Crop the frame by setting the detection area
     detection_area = generate_detection_area(frame)
 
+    fps_start_time = 0
+    fps = 0
+
     while(success): # Reading the video file until finished
         ret, frame = vidcap.read() # Capture frame-by-frame
+
         if ret:
             face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-            if cv2.waitKey(8) == 27:  # Esc to exit
-                break
         else: break
+        
+        fps_end_time = time.time()
+        time_diff = fps_end_time - fps_start_time
+        fps = 1/(time_diff)
+        fps_start_time = fps_end_time
+        fps_text = "FPS: {:.0f}".format(fps)
 
-        if not ret:
-            break
-        fps_counter(frame)
+        cv2.putText(frame, fps_text, (5, 30), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 255), 2)
 
-        showImg = imutils.resize(frame, height=500)
+        showImg = imutils.resize(frame, height=600)
         cv2.imshow('Live Streaming', showImg) # Display frame/image
+        
+        if cv2.waitKey(10) == 27:  # Esc to exit
+            break
 
     vidcap.release() # Release video capture object
     cv2.destroyAllWindows() # Destroy all frame windows
