@@ -3,29 +3,28 @@ import imutils
 import cv2
 import numpy as np
 from openvino.inference_engine import IECore
+import json
+from fpsCounter import fps_counter
 
-# OPenVino models
-model_bin = "./models/face-detection-retail-0005.bin"
-model_xml = "./models/face-detection-retail-0005.xml"
+with open("settings.json") as settings:
+    config = json.load(settings)
+
+# OpenVino models
+model_xml = config.get("model_xml")
+model_bin = config.get("model_bin")
 
 # Video location
-video_patch = "./video/Face_Cam_1.mp4"
+video_patch = config.get("video_patch")
 
 # Colors to be used with opencv
-BLUE = (255, 0, 0)
-RED = (0, 0, 255)
+BLUE = config.get("BLUE")
+RED = config.get("RED")
 
 # Parameter to filter detections based on confidence
-confidence_threshold = 0.6
+confidence = config.get("confidence")
 
 # Device
-device = "CPU"
-
-#setear los frame time en 0 antes de empezar a contar
-initial_dt = datetime.now()
-initial_ts = int(datetime.timestamp(initial_dt))
-fps = 0
-save_fps = 0
+device = config.get("device")
 
 # Select area of interest function
 def generate_roi(frame, message):
@@ -71,21 +70,6 @@ def check_detection_area(x, y, detection_area):
     # Returns True if the passed parameters are within the detection area
     return xmin < x and x < xmax and ymin < y and y < ymax
 
-# FPS Counter
-def fps_counter(frame):
-    global initial_dt, initial_ts, fps, save_fps # Make global variables
-    dt = datetime.now()
-    ts = int(datetime.timestamp(dt))
-    if ts > initial_ts:
-        print("FPS: ", fps)
-        save_fps = fps # Save results in a variable
-        fps = 0 # Set fps to 0
-        initial_ts = ts
-    else:
-        fps += 1
-    font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-    cv2.putText(frame, "FPS:" + str(int(save_fps)), (5, 30), font, 1, (0, 255, 255), 1) #Print FPS on the frame
-
 # Main Function
 def face_detection( # Get parameters of the model
     frame,
@@ -111,7 +95,7 @@ def face_detection( # Get parameters of the model
         accuracy = float(detection[2])
         det_color = BLUE if label == 1 else RED
         # Draw only objects when accuracy is greater than configured threshold
-        if accuracy > confidence_threshold:
+        if accuracy > confidence:
             xmin = int(detection[3] * initial_w)
             ymin = int(detection[4] * initial_h)
             xmax = int(detection[5] * initial_w)
@@ -135,8 +119,8 @@ def main():
     ie = IECore() # Instantiate an IEcore object to work with openvino
 
     neural_net = ie.read_network(
-        model = model_xml, 
-        weights = model_bin
+        model_xml, 
+        model_bin
     )
     execution_net = ie.load_network(
         network=neural_net, device_name=device.upper()
@@ -168,8 +152,6 @@ def main():
                 break
         else: break
 
-        if not ret:
-            break
         fps_counter(frame)
 
         showImg = imutils.resize(frame, height=500)

@@ -1,0 +1,19 @@
+{
+    "model_bin": "./models/face-detection-retail-0005.bin",
+    "model_xml": "./models/face-detection-retail-0005.xml",
+    "video_patch": "./video/Face_Cam_1.mp4",
+    "confidence": 0.6,
+    "device": "CPU",
+    "fps": 0,
+    "save_fps": 0,
+    "BLUE": [
+        255,
+        0,
+        0
+    ],
+    "RED": [
+        0,
+        0,
+        255
+    ]
+}
