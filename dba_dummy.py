@@ -6,6 +6,7 @@ from openvino.inference_engine import IECore
 import json
 from fpsCounter import fps_counter
 from generateRoi import generate_roi
+from checkDetArea import check_detection_area
 
 with open("settings.json") as settings:
     config = json.load(settings)
@@ -26,20 +27,6 @@ confidence = config.get("confidence")
 
 # Device
 device = config.get("device")
-
-# Check detection area
-def check_detection_area(x, y, detection_area):
-    # Verify that the detection area has size 2 if it does not throw an error
-    if len(detection_area) != 2: 
-        raise ValueError("Invalid number of points in detection area")
-    # Set boundaries area
-    top_left = detection_area[0]
-    bottom_right = detection_area[1]
-    # Get coordinates
-    xmin, ymin = top_left[0], top_left[1]
-    xmax, ymax = bottom_right[0], bottom_right[1]
-    # Returns True if the passed parameters are within the detection area
-    return xmin < x and x < xmax and ymin < y and y < ymax
 
 # Main Function
 def face_detection( # Get parameters of the model
