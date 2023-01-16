@@ -5,7 +5,7 @@ MODEL_REPO_LINK="https://storage.openvinotoolkit.org/repositories/open_model_zoo
 MODEL_FOLDER=./models
 
 if [ ! -f "$MODEL_FOLDER/$MODEL.xml"  ]; then
-    echo "Downloading Model.. "
+    echo "Downloading Models.. "
     curl $MODEL_REPO_LINK/$MODEL/FP32/$MODEL.xml \
      --create-dirs -o $MODEL_FOLDER/$MODEL.xml
 fi

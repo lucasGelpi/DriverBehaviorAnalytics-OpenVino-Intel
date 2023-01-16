@@ -4,9 +4,6 @@ PIP=pip3
 VIRTUAL_ENV = $(REPO_FOLDER)/venv
 
 download_models:
-	@echo "-----------------------------------------------------------"
-	@echo "Downloading models"
-	@echo "-----------------------------------------------------------"
 	./Scripts/download_model.sh face-detection-retail-0005
 
 run_proyect:
@@ -15,5 +12,4 @@ run_proyect:
 	@echo "-----------------------------------------------------------"
 	$(REPO_FOLDER)/Scripts/config_virtual_env.sh $(PIP) $(PYTHON) $(VIRTUAL_ENV)
 
-start:
-	download_models run_proyect
+start: download_models run_proyect
