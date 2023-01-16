@@ -16,4 +16,4 @@ run_proyect:
 	$(REPO_FOLDER)/Scripts/config_virtual_env.sh $(PIP) $(PYTHON) $(VIRTUAL_ENV)
 
 start:
-	download_model run_proyect
+	download_models run_proyect

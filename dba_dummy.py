@@ -25,7 +25,7 @@ device = "CPU"
 initial_dt = datetime.now()
 initial_ts = int(datetime.timestamp(initial_dt))
 fps = 0
-old_fps = 0
+save_fps = 0
 
 # Select area of interest function
 def generate_roi(frame, message):
@@ -73,18 +73,18 @@ def check_detection_area(x, y, detection_area):
 
 # FPS Counter
 def fps_counter(frame):
-    global initial_dt, initial_ts, fps, old_fps # Make global variables
+    global initial_dt, initial_ts, fps, save_fps # Make global variables
     dt = datetime.now()
     ts = int(datetime.timestamp(dt))
     if ts > initial_ts:
         print("FPS: ", fps)
-        old_fps = fps # Save results in a variable
+        save_fps = fps # Save results in a variable
         fps = 0 # Set fps to 0
         initial_ts = ts
     else:
         fps += 1
     font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-    cv2.putText(frame, "FPS:" + str(int(old_fps)), (5, 30), font, 1, (0, 255, 255), 1) #Print FPS on the frame
+    cv2.putText(frame, "FPS:" + str(int(save_fps)), (5, 30), font, 1, (0, 255, 255), 1) #Print FPS on the frame
 
 # Main Function
 def face_detection( # Get parameters of the model
@@ -164,7 +164,7 @@ def main():
         if ret:
             frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
             face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-            if cv2.waitKey(10) == 27:  # Esc to exit
+            if cv2.waitKey(15) == 27:  # Esc to exit
                 break
         else: break
 
@@ -172,7 +172,7 @@ def main():
             break
         fps_counter(frame)
 
-        showImg = imutils.resize(frame, height=400)
+        showImg = imutils.resize(frame, height=500)
         cv2.imshow('Live Streaming', showImg) # Display frame/image
 
     vidcap.release() # Release video capture object
