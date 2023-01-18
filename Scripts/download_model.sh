@@ -1,6 +1,6 @@
 MODEL=$1
 MODEL_REPO_LINK="https://storage.openvinotoolkit.org/repositories/open_model_zoo/2021.4/models_bin/3"
-MODEL_FOLDER=./face_detection/models
+MODEL_FOLDER=./models
 
 if [ ! -f "$MODEL_FOLDER/$MODEL.xml"  ]; then
     echo "Downloading Models.. "

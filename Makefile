@@ -5,6 +5,7 @@ VIRTUAL_ENV = $(REPO_FOLDER)/venv
 
 download_models:
 	./Scripts/download_model.sh face-detection-retail-0005
+	./Scripts/download_model.sh face-reidentification-retail-0095
 
 run_proyect:
 	@echo "-----------------------------------------------------------"
