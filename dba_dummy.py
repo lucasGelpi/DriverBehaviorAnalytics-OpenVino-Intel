@@ -1,10 +1,8 @@
 import imutils, cv2, json
 from openvino.inference_engine import IECore
-from fpsCounter import fps_counter
-from generateRoi import generate_roi
-from faceDetection import face_detection
+from face_detection.functions import fps_counter, generate_roi, face_detection
 
-with open("settings.json") as settings:
+with open("face_detection/settings.json") as settings:
     config = json.load(settings)
 
 # OpenVino models
