@@ -1,6 +1,7 @@
 import imutils, cv2, json
 from openvino.inference_engine import IECore
 from face_detection.functions import fps_counter, generate_roi, face_detection
+from face_reidentification.functions import process, face_comparison, face_recognition
 
 with open("face_detection/settings.json") as settings:
     config = json.load(settings)
@@ -49,6 +50,9 @@ def main():
         if ret:
             frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
             face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
+            face_recognition(frame)
+            face_comparison(new_vector=0)
+            process(frame, ("faces"))
             if cv2.waitKey(15) == 27:  # Esc to exit
                 break
         else: break

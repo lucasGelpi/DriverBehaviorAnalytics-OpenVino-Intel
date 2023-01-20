@@ -1,6 +1,6 @@
 {
-    "model_xml": "face_detection/models/face-detection-retail-0005.xml",
-    "model_bin": "face_detection/models/face-detection-retail-0005.bin",
+    "model_xml": "face_reidentification/models/face-reidentification-retail-0095.xml",
+    "model_bin": "face_reidentification/models/face-reidentification-retail-0095.bin",
     "video_patch": "./video/Face_Cam_1.mp4",
     "confidence": 0.6,
     "device": "CPU",
@@ -15,5 +15,6 @@
         0,
         0,
         255
-    ]
+    ],
+    "drivers_dir": "/face_database"
 }
