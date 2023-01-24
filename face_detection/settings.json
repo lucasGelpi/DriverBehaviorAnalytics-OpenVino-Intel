@@ -1,7 +1,7 @@
 {
     "model_xml": "face_detection/models/face-detection-retail-0005.xml",
     "model_bin": "face_detection/models/face-detection-retail-0005.bin",
-    "video_patch": "./video/Face_Cam_1.mp4",
+    "video_patch": "./video/Face_Cam_2.mp4",
     "confidence": 0.6,
     "device": "CPU",
     "fps": 0,

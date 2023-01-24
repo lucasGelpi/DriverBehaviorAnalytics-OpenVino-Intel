@@ -1,11 +1,12 @@
 {
     "model_xml": "face_reidentification/models/face-reidentification-retail-0095.xml",
     "model_bin": "face_reidentification/models/face-reidentification-retail-0095.bin",
-    "video_patch": "./video/Face_Cam_1.mp4",
+    "video_patch": "./video/Face_Cam_2.mp4",
     "confidence": 0.6,
     "device": "CPU",
     "fps": 0,
     "save_fps": 0,
+    "drivers_dir": "./face_reidentification/settings.json",
     "BLUE": [
         255,
         0,
@@ -16,5 +17,5 @@
         0,
         255
     ],
-    "drivers_dir": "/face_database"
+    "name": "face_reidentification.functions.py"
 }
