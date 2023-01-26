@@ -122,5 +122,5 @@ class FaceReidClass:
             'ASCII', 'surrogateescape').decode('UTF-8')
         print(metadata)
         font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-        cv2.putText(frame, "FPS:" + str(self.driver_name), (10, 40), font, 2, (0, 255, 255), 3) #Print FPS on the frame
+        cv2.putText(frame, "DRIVER:" + str(self.driver_name), (5, 120), font, 2, (0, 255, 255), 3) #Print FPS on the frame
         return False, None, metadata

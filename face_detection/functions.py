@@ -131,4 +131,4 @@ def fps_counter(frame):
     else:
         fps += 1
     font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-    cv2.putText(frame, "FPS:" + str(int(save_fps)), (5, 30), font, 1, (0, 255, 255), 2) #Print FPS on the frame
+    cv2.putText(frame, "FPS:" + str(int(save_fps)), (5, 50), font, 2, (0, 255, 255), 3) #Print FPS on the frame
