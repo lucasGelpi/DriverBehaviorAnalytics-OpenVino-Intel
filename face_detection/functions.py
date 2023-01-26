@@ -2,6 +2,7 @@ from datetime import datetime
 import cv2
 import numpy as np
 import json
+from face_reidentification.functions import FaceReidClass
 
 with open("face_detection/settings.json") as settings:
     config = json.load(settings)
@@ -32,7 +33,8 @@ def face_detection( # Get parameters of the model
     # Let element 3 first, 1 second, and 2 third and then adding a new one in position 1
     input_image = np.expand_dims(resized_frame.transpose(2, 0, 1), 0)
     results = execution_net.infer(inputs={input_blob: input_image}).get(output_blob)
-
+    metadata = {}
+    metadata["faces"] = []
     for detection in results[0][0]:
         label = int(detection[1])
         accuracy = float(detection[2])
@@ -56,6 +58,14 @@ def face_detection( # Get parameters of the model
                     det_color,
                     thickness=2,
                 )
+                
+                valuetl = {'tl': [xmin, ymin]}
+                valuebr = {'br': [xmax, ymax]}
+                metadata["faces"] = [valuetl, valuebr]
+                #metadata["faces"] = [valuebr]
+                print(metadata)
+    return metadata
+
 
 # Select area of interest function
 def generate_roi(frame, message):

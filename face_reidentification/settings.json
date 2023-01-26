@@ -1,12 +1,11 @@
 {
     "model_xml": "face_reidentification/models/face-reidentification-retail-0095.xml",
     "model_bin": "face_reidentification/models/face-reidentification-retail-0095.bin",
-    "video_patch": "./video/Face_Cam_2.mp4",
     "confidence": 0.6,
     "device": "CPU",
     "fps": 0,
     "save_fps": 0,
-    "drivers_dir": "./face_reidentification/settings.json",
+    "drivers_dir": "/opt/intel/eii/local_storage/saved_drivers",
     "BLUE": [
         255,
         0,

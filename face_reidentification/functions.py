@@ -6,34 +6,21 @@ import os
 import logging
 from openvino.inference_engine import IECore
 
-with open("face_reidentification/settings.json") as settings:
-    config = json.load(settings)
-
-# # OpenVino models
-# model_xml = config.get("model_xml")
-# model_bin = config.get("model_bin")
-
-# # Device
-# device = config.get("device")
-
-# # Parameter to filter detections based on confidence
-# confidence = config.get("confidence")
-
-# drivers_dir = config.get("drivers_dir")
-# drivers_dict = {}
-# driver_name = "Unknown"
-
-class Udf:
-    """Address Detection UDF"""
-
+class FaceReidClass:
     def __init__(self, model_xml, model_bin, device, confidence_threshold, drivers_dir):
         """Constructor"""
+        with open("face_reidentification/settings.json") as settings:
+            configRei = json.load(settings)
+        confidenceRei = configRei.get("confidence")
+        deviceRei = configRei.get("device")
+        drivers_dir = configRei.get("drivers_dir")
+
         self.log = logging.getLogger("FACE_REIDENTIFICATION")
-        self.model_xml = config.get("model_xml")
-        self.model_bin = config.get("model_bin")
-        self.device = config.get("device")
-        self.confidence_threshold = float(confidence_threshold)
-        self.drivers_dir = config.get("drivers_dir")
+        self.model_xml = model_xml
+        self.model_bin = model_bin
+        self.device = deviceRei
+        self.confidence_threshold = float(confidenceRei)
+        self.drivers_dir = drivers_dir
         self.drivers_dict = {}
         self.new_driver = True
         self.driver_name = "Unknown"
@@ -111,6 +98,7 @@ class Udf:
             if self.new_driver:
                 face = faces[0]
                 xmin, ymin = face["tl"]
+                face = faces[1]
                 xmax, ymax = face["br"]
                 frame = frame[ymin : ymax + 1, xmin : xmax + 1]
                 if frame.any():
@@ -132,4 +120,7 @@ class Udf:
 
         metadata["driver_name"] = self.driver_name.encode(
             'ASCII', 'surrogateescape').decode('UTF-8')
+        print(metadata)
+        font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
+        cv2.putText(frame, "FPS:" + str(self.driver_name), (10, 40), font, 2, (0, 255, 255), 3) #Print FPS on the frame
         return False, None, metadata
