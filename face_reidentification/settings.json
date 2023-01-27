@@ -5,7 +5,7 @@
     "device": "CPU",
     "fps": 0,
     "save_fps": 0,
-    "drivers_dir": "/opt/intel/eii/local_storage/saved_drivers",
+    "drivers_dir": "./face_database",
     "BLUE": [
         255,
         0,

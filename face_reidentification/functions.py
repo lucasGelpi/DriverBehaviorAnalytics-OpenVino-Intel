@@ -63,7 +63,7 @@ class FaceReidClass:
 
     def face_recognition(self, frame):
 
-        _, _, H, W = self.neural_net.input_info[self.input_blob].tensor_desc.dims
+        B, C, H, W = self.neural_net.input_info[self.input_blob].tensor_desc.dims
         resized_frame = cv2.resize(frame, (W, H))
 
         # reshape to network input shape
@@ -120,7 +120,6 @@ class FaceReidClass:
 
         metadata["driver_name"] = self.driver_name.encode(
             'ASCII', 'surrogateescape').decode('UTF-8')
-        print(metadata)
         font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-        cv2.putText(frame, "DRIVER:" + str(self.driver_name), (5, 120), font, 2, (0, 255, 255), 3) #Print FPS on the frame
+        cv2.putText(frame, "Driver: " + str(self.driver_name), (5, 110), font, 1, (0, 255, 255), 2)
         return False, None, metadata
