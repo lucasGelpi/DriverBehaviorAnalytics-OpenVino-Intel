@@ -24,6 +24,7 @@ deviceDet = configDet.get("device")
 confidenceRei = configRei.get("confidence")
 deviceRei = configRei.get("device")
 drivers_dir = configRei.get("drivers_dir")
+drivers_dict = {}
 
 reidClas = FaceReidClass(model_xmlRei, model_binRei, deviceRei, confidenceRei, drivers_dir)
 
@@ -70,7 +71,7 @@ def main():
         fps_counter(frame)
         metadata = face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
         reidClas.process(frame, metadata)
-        
+
         showImg = imutils.resize(frame, height=500)
         cv2.imshow('Live Streaming', showImg) # Display frame/image
 
