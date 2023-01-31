@@ -7,7 +7,7 @@ import logging
 from openvino.inference_engine import IECore
 
 class FaceReidClass:
-    def __init__(self, model_xml, model_bin, device, confidence_threshold, drivers_dir):
+    def __init__(self, model_xml, model_bin, device, confidenceRei, drivers_dir):
         """Constructor"""
         with open("face_reidentification/settings.json") as settings:
             configRei = json.load(settings)
@@ -19,7 +19,7 @@ class FaceReidClass:
         self.model_xml = model_xml
         self.model_bin = model_bin
         self.device = deviceRei
-        self.confidence_threshold = float(confidenceRei)
+        self.confidenceRei = float(confidenceRei)
         self.drivers_dir = drivers_dir
         self.drivers_dict = {}
         self.new_driver = True
@@ -30,7 +30,7 @@ class FaceReidClass:
         if not os.path.exists(self.model_bin):
             raise FileNotFoundError(f"Model bin file missing: {self.model_bin}")
         self.log.info("Config reading completed...")
-        self.log.info("Confidence = %s", self.confidence_threshold)
+        self.log.info("Confidence = %s", self.confidenceRei)
         self.log.info(
             "Loading IR files. \n\txml: %s, \n\tbin: %s", self.model_xml, self.model_bin
         )
@@ -79,7 +79,7 @@ class FaceReidClass:
     def face_comparison(self, new_vector):
         for name, vector in self.drivers_dict.items():
             result = 1 - spatial.distance.cosine(vector, new_vector)
-            if result >= self.confidence_threshold:
+            if result >= self.confidenceRei:
                 return name
         return "Unknown"
 
@@ -120,6 +120,12 @@ class FaceReidClass:
 
         metadata["driver_name"] = self.driver_name.encode(
             'ASCII', 'surrogateescape').decode('UTF-8')
+
         font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-        cv2.putText(frame, "Driver: " + str(self.driver_name), (5, 110), font, 1, (0, 255, 255), 2)
-        return False, None, metadata
+        org = 100
+        for i in faces:
+            if i in metadata['faces']:
+                cv2.putText(frame, "Driver: " + str(self.driver_name), (5, org), font, 1, (0, 255, 255), 2)
+                org += 50
+                print(faces)
+        return False, None

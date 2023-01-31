@@ -61,9 +61,7 @@ def face_detection( # Get parameters of the model
                 valuetl = {'tl': [xmin, ymin]}
                 valuebr = {'br': [xmax, ymax]}
                 metadata["faces"] = [valuetl, valuebr]
-                #metadata["faces"] = [valuebr]
     return metadata
-
 
 # Select area of interest function
 def generate_roi(frame, message):

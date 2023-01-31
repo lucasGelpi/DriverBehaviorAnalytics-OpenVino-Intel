@@ -1,3 +1,5 @@
+
+
 import imutils, cv2, json
 from openvino.inference_engine import IECore
 from face_detection.functions import fps_counter, generate_roi, face_detection
