@@ -87,12 +87,10 @@ class FaceReidClass:
                    new metadata for the frame if any)
         :rtype: (bool, numpy.ndarray, str)
         """
-        org = 100
         font = cv2.FONT_HERSHEY_SIMPLEX 
-        
         faces = metadata.get("faces")
         #print(len(faces))
-        # print(faces)
+        #print(faces)
         if faces and self.drivers_dict:
             for face in faces:
                 if self.new_driver:
@@ -111,14 +109,15 @@ class FaceReidClass:
                         
                         vector = self.face_recognition(frameResized)
                         self.driver_name = self.face_comparison(vector)
-                        cv2.putText(frame, "Driver: " + str(self.driver_name), (xmin, ymax+10), font, 1, (0, 255, 255), 2)
-                        if self.driver_name != "Unknown":
-                            print(self.driver_name)
-                        self.new_driver = self.driver_name == "Unknown"
-                        font = cv2.FONT_HERSHEY_SIMPLEX 
-                        org += 50
+                        #cv2.putText(frame, "Driver: " + str("chau"), (5, 150), font, 1, (0, 255, 255), 1)
                         
-
+            if self.driver_name != "Unknown":
+                print(self.driver_name)
+                cv2.putText(frame, "Driver: " + str(self.driver_name), (xmin, ymax-20), font, 1, (0, 255, 255), 2)
+                        #self.new_driver = self.driver_name == "Unknown"
+                        
+                        
+                        
         else:
             self.new_driver = True
             self.driver_name = "Unknown"

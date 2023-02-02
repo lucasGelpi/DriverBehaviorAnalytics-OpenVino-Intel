@@ -24,7 +24,7 @@ deviceDet = configDet.get("device")
 confidenceRei = configRei.get("confidence")
 deviceRei = configRei.get("device")
 drivers_dir = configRei.get("drivers_dir")
-drivers_dict = {}
+#drivers_dict = {}
 
 reidClas = FaceReidClass(model_xmlRei, model_binRei, deviceRei, confidenceRei, drivers_dir)
 
@@ -56,9 +56,9 @@ def main():
 
     # Crop the frame by setting the detection area
     detection_area = generate_roi(frame, "Select Detection Area")
-
+    metadata = {}
     while(success): # Reading the video file until finished
-        metadata = {}
+        
         ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
             frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
@@ -70,7 +70,7 @@ def main():
 
         fps_counter(frame)
         metadata = face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-        #print(metadata)
+        print(metadata)
         reidClas.process(frame, metadata)
         
         showImg = imutils.resize(frame, height=500)
