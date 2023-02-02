@@ -83,7 +83,7 @@ class FaceReidClass:
                 return name
         return "Unknown"
 
-    def process(self, frame, metadata):
+    def process(self, frameResized, metadata):
         """[summary]
         :param frame: frame blob
         :type frame: numpy.ndarray
@@ -93,25 +93,37 @@ class FaceReidClass:
                    new metadata for the frame if any)
         :rtype: (bool, numpy.ndarray, str)
         """
+        org = 100
+        font = cv2.FONT_HERSHEY_SIMPLEX 
+        
         faces = metadata.get("faces")
+        # print(len(faces))
+        # print(faces)
         if faces and self.drivers_dict:
-            if self.new_driver:
-                face = faces[0]
-                xmin, ymin = face["tl"]
-                face = faces[1]
-                xmax, ymax = face["br"]
-                frame = frame[ymin : ymax + 1, xmin : xmax + 1]
-                if frame.any():
-                    frame = cv2.resize(
-                        frame,
-                        (
-                            xmax - xmin,
-                            ymax - ymin,
-                        ),
-                    )
-                    vector = self.face_recognition(frame)
-                    self.driver_name = self.face_comparison(vector)
-                    self.new_driver = self.driver_name == "Unknown"
+            for face in faces:
+                if self.new_driver:
+                    xmin, ymin = face["tl"]
+                    xmax, ymax = face["br"]
+                    frame = frameResized[ymin : ymax + 1, xmin : xmax + 1]
+                    if frameResized.any():
+                        
+                        # frameResized = cv2.resize(
+                        #     frameResized,
+                        #     (
+                        #         xmax - xmin,
+                        #         ymax - ymin,
+                        #     ),
+                        # )
+                        
+                        vector = self.face_recognition(frameResized)
+                        self.driver_name = self.face_comparison(vector)
+                        cv2.putText(frame, "Driver: " + str(self.driver_name), (xmin, ymax+10), font, 1, (0, 255, 255), 2)
+                        if self.driver_name != "Unknown":
+                            print(self.driver_name)
+                        self.new_driver = self.driver_name == "Unknown"
+                        font = cv2.FONT_HERSHEY_SIMPLEX 
+                        org += 50
+                        
 
         else:
             self.new_driver = True
@@ -121,11 +133,4 @@ class FaceReidClass:
         metadata["driver_name"] = self.driver_name.encode(
             'ASCII', 'surrogateescape').decode('UTF-8')
 
-        font = cv2.FONT_HERSHEY_SIMPLEX # Font which we will be using to display FPS
-        org = 100
-        for i in faces:
-            if i in metadata['faces']:
-                cv2.putText(frame, "Driver: " + str(self.driver_name), (5, org), font, 1, (0, 255, 255), 2)
-                org += 50
-                print(faces)
         return False, None
