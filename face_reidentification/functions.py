@@ -1,4 +1,4 @@
-import cv2, json
+import cv2
 import numpy as np
 from imutils import paths
 from scipy import spatial
@@ -9,16 +9,10 @@ from openvino.inference_engine import IECore
 class FaceReidClass:
     def __init__(self, model_xml, model_bin, device, confidenceRei, drivers_dir):
         """Constructor"""
-        with open("face_reidentification/settings.json") as settings:
-            configRei = json.load(settings)
-        confidenceRei = configRei.get("confidence")
-        deviceRei = configRei.get("device")
-        drivers_dir = configRei.get("drivers_dir")
-
         self.log = logging.getLogger("FACE_REIDENTIFICATION")
         self.model_xml = model_xml
         self.model_bin = model_bin
-        self.device = deviceRei
+        self.device = device
         self.confidenceRei = float(confidenceRei)
         self.drivers_dir = drivers_dir
         self.drivers_dict = {}
@@ -83,7 +77,7 @@ class FaceReidClass:
                 return name
         return "Unknown"
 
-    def process(self, frameResized, metadata):
+    def process(self, frame, metadata):
         """[summary]
         :param frame: frame blob
         :type frame: numpy.ndarray
@@ -97,23 +91,23 @@ class FaceReidClass:
         font = cv2.FONT_HERSHEY_SIMPLEX 
         
         faces = metadata.get("faces")
-        # print(len(faces))
+        #print(len(faces))
         # print(faces)
         if faces and self.drivers_dict:
             for face in faces:
                 if self.new_driver:
                     xmin, ymin = face["tl"]
                     xmax, ymax = face["br"]
-                    frame = frameResized[ymin : ymax + 1, xmin : xmax + 1]
+                    frameResized = frame[ymin : ymax + 1, xmin : xmax + 1]
                     if frameResized.any():
                         
-                        # frameResized = cv2.resize(
-                        #     frameResized,
-                        #     (
-                        #         xmax - xmin,
-                        #         ymax - ymin,
-                        #     ),
-                        # )
+                        frameResized = cv2.resize(
+                            frameResized,
+                            (
+                                xmax - xmin,
+                                ymax - ymin,
+                            ),
+                        )
                         
                         vector = self.face_recognition(frameResized)
                         self.driver_name = self.face_comparison(vector)

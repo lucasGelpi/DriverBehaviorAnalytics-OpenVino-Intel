@@ -57,15 +57,10 @@ def face_detection( # Get parameters of the model
                     det_color,
                     thickness=2,
                 )
-                
-                #valuetl = {'tl': [xmin, ymin]}
-                #valuebr = {'br': [xmax, ymax]}
-                #metadata["faces"] = [valuetl, valuebr]
-                #print(metadata)
-                metadata["faces"] = [{
+                metadata["faces"].append({
                     'tl': [xmin, ymin],
                     'br': [xmax, ymax]
-                }]
+                })
     return metadata
 
 # Select area of interest function
