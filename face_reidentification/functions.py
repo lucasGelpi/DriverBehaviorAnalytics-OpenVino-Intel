@@ -98,7 +98,6 @@ class FaceReidClass:
                     xmax, ymax = face["br"]
                     frameResized = frame[ymin : ymax + 1, xmin : xmax + 1]
                     if frameResized.any():
-                        
                         frameResized = cv2.resize(
                             frameResized,
                             (
@@ -106,18 +105,12 @@ class FaceReidClass:
                                 ymax - ymin,
                             ),
                         )
-                        
                         vector = self.face_recognition(frameResized)
                         self.driver_name = self.face_comparison(vector)
-                        #cv2.putText(frame, "Driver: " + str("chau"), (5, 150), font, 1, (0, 255, 255), 1)
-                        
-            if self.driver_name != "Unknown":
-                print(self.driver_name)
-                cv2.putText(frame, "Driver: " + str(self.driver_name), (xmin, ymax-20), font, 1, (0, 255, 255), 2)
-                        #self.new_driver = self.driver_name == "Unknown"
-                        
-                        
-                        
+                        cv2.putText(frame, 
+                        "Driver: " + str(self.driver_name), 
+                        (xmin, ymax-20), 
+                        font, 0.7, (0, 255, 255), 2)
         else:
             self.new_driver = True
             self.driver_name = "Unknown"

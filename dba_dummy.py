@@ -70,7 +70,6 @@ def main():
 
         fps_counter(frame)
         metadata = face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-        print(metadata)
         reidClas.process(frame, metadata)
         
         showImg = imutils.resize(frame, height=500)
