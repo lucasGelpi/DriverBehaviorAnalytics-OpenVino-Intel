@@ -1,6 +1,7 @@
 # Ignoring Python modules and cache
 .python_modules/
 .__pycache__
+*.pyc
 
 # Ignoring Virtual Environment
 venv/

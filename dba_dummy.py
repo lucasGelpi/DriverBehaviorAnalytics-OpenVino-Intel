@@ -24,12 +24,10 @@ deviceDet = configDet.get("device")
 confidenceRei = configRei.get("confidence")
 deviceRei = configRei.get("device")
 drivers_dir = configRei.get("drivers_dir")
-#drivers_dict = {}
 
 reidClas = FaceReidClass(model_xmlRei, model_binRei, deviceRei, confidenceRei, drivers_dir)
 
 def main():
-
     ie = IECore() # Instantiate an IEcore object to work with openvino
 
     neural_net = ie.read_network(
@@ -58,7 +56,6 @@ def main():
     detection_area = generate_roi(frame, "Select Detection Area")
     metadata = {}
     while(success): # Reading the video file until finished
-        
         ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
             frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
@@ -79,6 +76,6 @@ def main():
     cv2.destroyAllWindows() # Destroy all frame windows
 
 main()
-print("------------------------------")
+print("-------------------------------")
 print("USE CASE EXECUTED SUCCESSFULLY")
-print("------------------------------")
+print("-------------------------------")

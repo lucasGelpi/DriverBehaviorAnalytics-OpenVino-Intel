@@ -89,8 +89,6 @@ class FaceReidClass:
         """
         font = cv2.FONT_HERSHEY_SIMPLEX 
         faces = metadata.get("faces")
-        #print(len(faces))
-        #print(faces)
         if faces and self.drivers_dict:
             for face in faces:
                 if self.new_driver:
@@ -108,8 +106,8 @@ class FaceReidClass:
                         vector = self.face_recognition(frameResized)
                         self.driver_name = self.face_comparison(vector)
                         cv2.putText(frame, 
-                        "Driver: " + str(self.driver_name), 
-                        (xmin, ymax-20), 
+                        str(self.driver_name), 
+                        (xmin+5, ymax-15), 
                         font, 0.7, (0, 255, 255), 2)
         else:
             self.new_driver = True
