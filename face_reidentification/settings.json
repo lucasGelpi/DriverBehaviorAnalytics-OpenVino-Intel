@@ -1,7 +1,7 @@
 {
     "model_xml": "face_reidentification/models/face-reidentification-retail-0095.xml",
     "model_bin": "face_reidentification/models/face-reidentification-retail-0095.bin",
-    "confidence": 0.4,
+    "confidence": 0.5,
     "device": "CPU",
     "fps": 0,
     "save_fps": 0,
