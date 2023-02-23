@@ -1,32 +1,41 @@
 import imutils, cv2, json
 from openvino.inference_engine import IECore
-from fpsCounter import fps_counter
-from generateRoi import generate_roi
-from faceDetection import face_detection
+from face_detection.functions import fps_counter, generate_roi, face_detection
+from face_reidentification.functions import FaceReidClass
 
-with open("settings.json") as settings:
-    config = json.load(settings)
+with open("face_detection/settings.json") as settings:
+    configDet = json.load(settings)
+
+with open("face_reidentification/settings.json") as settings:
+    configRei = json.load(settings)
 
 # OpenVino models
-model_xml = config.get("model_xml")
-model_bin = config.get("model_bin")
+model_xmlDet = configDet.get("model_xml")
+model_binDet = configDet.get("model_bin")
+model_xmlRei = configRei.get("model_xml")
+model_binRei = configRei.get("model_bin")
 
 # Video location
-video_patch = config.get("video_patch")
+video_patch = configDet.get("video_patch")
 
 # Device
-device = config.get("device")
+deviceDet = configDet.get("device")
+
+confidenceRei = configRei.get("confidence")
+deviceRei = configRei.get("device")
+drivers_dir = configRei.get("drivers_dir")
+
+reidClas = FaceReidClass(model_xmlRei, model_binRei, deviceRei, confidenceRei, drivers_dir)
 
 def main():
-
     ie = IECore() # Instantiate an IEcore object to work with openvino
 
     neural_net = ie.read_network(
-        model_xml, 
-        model_bin
+        model_xmlDet, 
+        model_binDet
     )
     execution_net = ie.load_network(
-        network=neural_net, device_name=device.upper()
+        network=neural_net, device_name=deviceDet.upper()
     )
     input_blob = next(iter(execution_net.input_info))
     output_blob = next(iter(execution_net.outputs))
@@ -45,18 +54,21 @@ def main():
 
     # Crop the frame by setting the detection area
     detection_area = generate_roi(frame, "Select Detection Area")
-
+    metadata = {}
     while(success): # Reading the video file until finished
         ret, frame = vidcap.read() # Capture frame-by-frame
         if ret:
             frame = frame[cropped_frame[0][1] : cropped_frame[1][1],cropped_frame[0][0] : cropped_frame[1][0]]
-            face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
-            if cv2.waitKey(15) == 27:  # Esc to exit
+
+            if cv2.waitKey(20) == 27:  # Esc to exit
                 break
-        else: break
+        else: 
+            break
 
         fps_counter(frame)
-
+        metadata = face_detection(frame, neural_net, execution_net, input_blob, output_blob, detection_area)
+        reidClas.process(frame, metadata)
+        
         showImg = imutils.resize(frame, height=500)
         cv2.imshow('Live Streaming', showImg) # Display frame/image
 
@@ -64,6 +76,6 @@ def main():
     cv2.destroyAllWindows() # Destroy all frame windows
 
 main()
-print("------------------------------")
+print("-------------------------------")
 print("USE CASE EXECUTED SUCCESSFULLY")
-print("------------------------------")
+print("-------------------------------")
